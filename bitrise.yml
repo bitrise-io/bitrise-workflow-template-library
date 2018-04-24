@@ -1,0 +1,47 @@
+format_version: 5
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - S3_TEMPLATES_BUCKET: $S3_TEMPLATES_BUCKET
+  - S3_TEMPLATES_BUCKET_REGION: $S3_TEMPLATES_BUCKET_REGION
+  - AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+
+workflows:
+  generate:
+    steps:
+    - script:
+        title: clean _tmp
+        inputs:
+        - content: rm -rf _tmp && mkdir _tmp
+    - script:
+        title: Install go dependencies
+        inputs:
+        - content: go get -u -v "gopkg.in/yaml.v2"
+    - script:
+        title: Generate spec JSON
+        inputs:
+        - content: go run main.go
+
+  upload:
+    title: Generating and uploading the spec JSON
+    steps:
+    - script:
+        title: Upload to S3
+        dependencies:
+          - manager: brew
+            name: awscli
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            aws s3 cp "./_tmp/template-spec.json" "s3://${S3_TEMPLATES_BUCKET}/template-spec.json" --acl public-read
+
+  test:
+    after_run:
+      - generate
+
+  update:
+    after_run:
+      - generate
+      - upload
