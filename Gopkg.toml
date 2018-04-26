@@ -3,6 +3,10 @@
   branch = "master"
 
 [[constraint]]
+  name = "github.com/bitrise-io/bitrise"
+  branch = "master"
+
+[[constraint]]
   name = "gopkg.in/yaml.v2"
   branch = "v2"
 

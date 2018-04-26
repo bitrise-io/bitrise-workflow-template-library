@@ -2,10 +2,10 @@
 
 
 [[projects]]
+  branch = "master"
   name = "github.com/bitrise-io/bitrise"
   packages = ["models"]
-  revision = "696a52ca81e19515edc17e889b089cd42e751d33"
-  version = "1.11.0"
+  revision = "aa721aa6ec38a95e9fc8a95b135402d5c99ca653"
 
 [[projects]]
   branch = "master"
@@ -46,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4332a1fbda861b605fed15a14adc059d30a36831d3b39afd2ea5b5ae883f8b2a"
+  inputs-digest = "4bb48b67ff1233bc44bdd6835dc2b31474893408eb3c16eccb58bd2b7efe517f"
   solver-name = "gps-cdcl"
   solver-version = 1
