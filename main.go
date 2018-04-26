@@ -92,9 +92,16 @@ func main() {
 		}
 		// filling step infos from spec json
 		for s := range templateSpec[file.Name()].Steps {
-			i, _, _ := steplibSpec.GetStepVersion(stepParams(s))
+			stepID, stepVersion := stepParams(s)
+			i, idExists, versionExists := steplibSpec.GetStepVersion(stepID, stepVersion)
 			if err != nil {
 				log.Fatal(err)
+			}
+			if !idExists {
+				log.Fatalf("Step doesn't exists with id: %s", stepID)
+			}
+			if !versionExists {
+				log.Fatalf("Step doesn't exists with version: %s", stepVersion)
 			}
 			if templateSpec[file.Name()].Steps[s] == nil {
 				templateSpec[file.Name()].Steps[s] = &step{}
