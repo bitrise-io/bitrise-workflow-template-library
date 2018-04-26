@@ -11,6 +11,10 @@ app:
 workflows:
   generate:
     steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test: 
     - script:
         title: clean _tmp
         inputs:
