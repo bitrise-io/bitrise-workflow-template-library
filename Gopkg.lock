@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/bitrise-io/bitrise"
   packages = ["models"]
-  revision = "4ff9e54c15d46ddd638030202326ee02734e8b82"
-  version = "1.8.0"
+  revision = "696a52ca81e19515edc17e889b089cd42e751d33"
+  version = "1.11.0"
 
 [[projects]]
   branch = "master"
@@ -26,16 +26,16 @@
   revision = "2d657206204605ce3b86124c33fea53c3e380d78"
 
 [[projects]]
+  branch = "master"
   name = "github.com/bitrise-io/stepman"
   packages = ["models"]
-  revision = "17de21286d81cb2ca87c3f7d1714317822465b79"
-  version = "0.9.36"
+  revision = "bf618fc92acaf08d8e1347666b4014f6b8fbcd7e"
 
 [[projects]]
+  branch = "master"
   name = "github.com/ryanuber/go-glob"
   packages = ["."]
-  revision = "572520ed46dbddaed19ea3d9541bdd0494163693"
-  version = "v0.1"
+  revision = "256dc444b735e061061cf46c809487313d5b0065"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -46,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4c9bc0996159cd0488e8aac25d4095af0ad61329e3f9aa07b7973a0078d217a4"
+  inputs-digest = "4332a1fbda861b605fed15a14adc059d30a36831d3b39afd2ea5b5ae883f8b2a"
   solver-name = "gps-cdcl"
   solver-version = 1
