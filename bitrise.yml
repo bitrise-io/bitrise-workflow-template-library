@@ -18,7 +18,7 @@ workflows:
     - script:
         title: Install go dependencies
         inputs:
-        - content: go get -u -v "gopkg.in/yaml.v2"
+        - content: go get -u -v "gopkg.in/yaml.v2" && go get -u -v "github.com/bitrise-io/stepman/models"
     - script:
         title: Generate spec JSON
         inputs:
