@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
+	bitriseModels "github.com/bitrise-io/bitrise/models"
 	stepmanModels "github.com/bitrise-io/stepman/models"
 	"gopkg.in/yaml.v2"
 )
@@ -35,26 +35,13 @@ type template struct {
 	Steps       map[string]*step `json:"steps"`
 }
 
-func stepParams(step string) (stepID string, stepVersion string) {
-	stepID = step
-	if s := strings.Split(step, "@"); len(s) > 1 {
-		stepID = s[0]
-		stepVersion = s[1]
-	}
-	return
-}
-
 func parseTemplate(templateSpec map[string]*template, templateID string) error {
-	ymlFile, err := os.Open(getYMLPath(templateID))
+	ymlFile, err := os.Open(filepath.Join(collectionDir, templateID, templateFileName))
 	if err != nil {
 		return err
 	}
 	templateSpec[templateID] = &template{}
 	return yaml.NewDecoder(ymlFile).Decode(templateSpec[templateID])
-}
-
-func getYMLPath(templateID string) string {
-	return filepath.Join(collectionDir, templateID, templateFileName)
 }
 
 func getSpecJSON() (steplibSpec stepmanModels.StepCollectionModel, err error) {
@@ -63,7 +50,7 @@ func getSpecJSON() (steplibSpec stepmanModels.StepCollectionModel, err error) {
 		return
 	}
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return stepmanModels.StepCollectionModel{}, fmt.Errorf("nonsuccessful response statusCode: %s", steplibSpecJSONURI)
+		return stepmanModels.StepCollectionModel{}, fmt.Errorf("nonsuccessful response statusCode: %d, %s", resp.StatusCode, steplibSpecJSONURI)
 	}
 	err = json.NewDecoder(resp.Body).Decode(&steplibSpec)
 	return
@@ -92,16 +79,19 @@ func main() {
 		}
 		// filling step infos from spec json
 		for s := range templateSpec[file.Name()].Steps {
-			stepID, stepVersion := stepParams(s)
-			i, idExists, versionExists := steplibSpec.GetStepVersion(stepID, stepVersion)
+			stepIDData, err := bitriseModels.CreateStepIDDataFromString(s, "https://github.com/bitrise-io/bitrise-steplib.git")
+			if err != nil {
+				log.Fatal(err)
+			}
+			i, idExists, versionExists := steplibSpec.GetStepVersion(stepIDData.IDorURI, stepIDData.Version)
 			if err != nil {
 				log.Fatal(err)
 			}
 			if !idExists {
-				log.Fatalf("Step doesn't exists with id: %s", stepID)
+				log.Fatalf("Step doesn't exists with id: %s", stepIDData.IDorURI)
 			}
 			if !versionExists {
-				log.Fatalf("Step doesn't exists with version: %s", stepVersion)
+				log.Fatalf("Step doesn't exists with version: %s", stepIDData.Version)
 			}
 			if templateSpec[file.Name()].Steps[s] == nil {
 				templateSpec[file.Name()].Steps[s] = &step{}

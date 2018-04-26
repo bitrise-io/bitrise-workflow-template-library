@@ -11,10 +11,6 @@ app:
 workflows:
   generate:
     steps:
-    - go-list:
-    - golint:
-    - errcheck:
-    - go-test: 
     - script:
         title: clean _tmp
         inputs:
@@ -42,6 +38,11 @@ workflows:
             aws s3 cp "./_tmp/template-spec.json" "s3://${S3_TEMPLATES_BUCKET}/template-spec.json" --acl public-read
 
   test:
+    steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test: 
     after_run:
       - generate
 
