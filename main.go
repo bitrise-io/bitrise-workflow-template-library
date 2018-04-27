@@ -44,6 +44,20 @@ func parseTemplate(templateSpec map[string]*template, templateID string) error {
 	return yaml.NewDecoder(ymlFile).Decode(templateSpec[templateID])
 }
 
+func validateTemplate(tpl *template) error {
+	for condition, errorMsg := range map[bool]string{
+		tpl == nil:          "cannot be empty",
+		tpl.Title == "":     "must have title",
+		tpl.Config == "":    "must have config",
+		len(tpl.Steps) == 0: "must have at least one step",
+	} {
+		if condition {
+			return fmt.Errorf(errorMsg)
+		}
+	}
+	return nil
+}
+
 func getSpecJSON() (steplibSpec stepmanModels.StepCollectionModel, err error) {
 	resp, err := http.Get(steplibSpecJSONURI)
 	if err != nil {
@@ -73,10 +87,14 @@ func main() {
 	templateSpec := map[string]*template{}
 	for _, file := range files {
 		// parse the template
-		err := parseTemplate(templateSpec, file.Name())
-		if err != nil {
+		if err := parseTemplate(templateSpec, file.Name()); err != nil {
 			log.Fatal(err)
 		}
+
+		if err := validateTemplate(templateSpec[file.Name()]); err != nil {
+			log.Fatalf("Template (%s) validation failed: %s", file.Name(), err)
+		}
+
 		// filling step infos from spec json
 		for s := range templateSpec[file.Name()].Steps {
 			stepIDData, err := bitriseModels.CreateStepIDDataFromString(s, "https://github.com/bitrise-io/bitrise-steplib.git")
