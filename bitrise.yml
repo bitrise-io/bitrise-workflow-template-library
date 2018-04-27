@@ -1,0 +1,73 @@
+format_version: 5
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - S3_TEMPLATES_BUCKET: $S3_TEMPLATES_BUCKET
+  - S3_TEMPLATES_BUCKET_REGION: $S3_TEMPLATES_BUCKET_REGION
+  - AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+
+workflows:
+  _generate:
+    steps:
+    - script:
+        title: clean _tmp
+        inputs:
+        - content: rm -rf _tmp && mkdir _tmp
+    - script:
+        title: Install go dependencies
+        inputs:
+        - content: go get -u -v "gopkg.in/yaml.v2" && go get -u -v "github.com/bitrise-io/stepman/models"
+    - script:
+        title: Generate spec JSON
+        inputs:
+        - content: go run main.go
+
+  _upload:
+    title: Generating and uploading the spec JSON
+    steps:
+    - script:
+        title: Upload to S3
+        dependencies:
+          - manager: brew
+            name: awscli
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            aws s3 cp "./_tmp/template-spec.json" "s3://${S3_TEMPLATES_BUCKET}/template-spec.json" --acl public-read
+
+  test:
+    before_run:
+      - _test
+    after_run:
+      - _generate
+
+  update:
+    before_run:
+      - _test
+    after_run:
+      - _generate
+      - _upload
+
+  _test:
+    steps:
+    - go-list:
+    - golint:
+    - errcheck:
+    - go-test: 
+
+  dep-update:
+    title: Dep update
+    description: |
+      Used for updating bitrise dependencies with dep
+    steps:
+    - script:
+        title: Dependency update
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -ex
+            go get -u -v github.com/golang/dep/cmd/dep
+            dep ensure -v
+            dep ensure -v -update
