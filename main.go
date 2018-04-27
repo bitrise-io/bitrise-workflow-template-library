@@ -56,7 +56,10 @@ func validateTemplate(tpl *template) error {
 			msgs = append(msgs, msg)
 		}
 	}
-	return fmt.Errorf(strings.Join(msgs, ", "))
+	if len(msgs) > 0 {
+		return fmt.Errorf(strings.Join(msgs, ", "))
+	}
+	return nil
 }
 
 func getSpecJSON() (steplibSpec stepmanModels.StepCollectionModel, err error) {
