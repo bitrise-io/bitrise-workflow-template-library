@@ -44,18 +44,17 @@ func parseTemplate(templateSpec map[string]*template, templateID string) error {
 	return yaml.NewDecoder(ymlFile).Decode(templateSpec[templateID])
 }
 
-func validateTemplate(tpl *template) error {
-	for condition, errorMsg := range map[bool]string{
-		tpl == nil:          "cannot be empty",
-		tpl.Title == "":     "must have title",
-		tpl.Config == "":    "must have config",
-		len(tpl.Steps) == 0: "must have at least one step",
+func validateTemplate(tpl *template) (errMsg string) {
+	for msg, condition := range map[string]bool{
+		"must have title":             tpl.Title == "",
+		"must have config":            tpl.Config == "",
+		"must have at least one step": len(tpl.Steps) == 0,
 	} {
 		if condition {
-			return fmt.Errorf(errorMsg)
+			errMsg += fmt.Sprintf("\n- %s", msg)
 		}
 	}
-	return nil
+	return
 }
 
 func getSpecJSON() (steplibSpec stepmanModels.StepCollectionModel, err error) {
@@ -91,8 +90,8 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if err := validateTemplate(templateSpec[file.Name()]); err != nil {
-			log.Fatalf("Template (%s) validation failed: %s", file.Name(), err)
+		if errMsg := validateTemplate(templateSpec[file.Name()]); errMsg != "" {
+			log.Fatalf("Template (%s) validation failed: %s", file.Name(), errMsg)
 		}
 
 		// filling step infos from spec json
