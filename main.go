@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	bitriseModels "github.com/bitrise-io/bitrise/models"
 	stepmanModels "github.com/bitrise-io/stepman/models"
@@ -44,17 +45,18 @@ func parseTemplate(templateSpec map[string]*template, templateID string) error {
 	return yaml.NewDecoder(ymlFile).Decode(templateSpec[templateID])
 }
 
-func validateTemplate(tpl *template) (errMsg string) {
+func validateTemplate(tpl *template) error {
+	var msgs []string
 	for msg, condition := range map[string]bool{
 		"must have title":             tpl.Title == "",
 		"must have config":            tpl.Config == "",
 		"must have at least one step": len(tpl.Steps) == 0,
 	} {
 		if condition {
-			errMsg += fmt.Sprintf("\n- %s", msg)
+			msgs = append(msgs, msg)
 		}
 	}
-	return
+	return fmt.Errorf(strings.Join(msgs, ", "))
 }
 
 func getSpecJSON() (steplibSpec stepmanModels.StepCollectionModel, err error) {
@@ -90,8 +92,8 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if errMsg := validateTemplate(templateSpec[file.Name()]); errMsg != "" {
-			log.Fatalf("Template (%s) validation failed: %s", file.Name(), errMsg)
+		if err := validateTemplate(templateSpec[file.Name()]); err != nil {
+			log.Fatalf("Template (%s) validation failed: %s", file.Name(), err)
 		}
 
 		// filling step infos from spec json
