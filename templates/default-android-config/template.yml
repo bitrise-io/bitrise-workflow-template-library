@@ -1,8 +1,7 @@
 title: "Default Android Config Title"
 lead: "Default Android Config Lead"
-summary: "Default Android Config Summaery"
+summary: "Default Android Config Summary"
 description: "Default Android Config Description"
-image: "http://test.url/test.png"
 steps:
   install-missing-android-tools:
   android-lint:
